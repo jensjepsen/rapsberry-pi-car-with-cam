@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <style>
+            body {
+                margin-top: 10px;
+            }
+            #arrows-bottom, #stop {
+                margin-top: 5px;
+            }
+            #arrows > div {
+                display: flex;
+                justify-content: center;
+            }
+            #arrow-left {
+                transform: rotate(-90deg);
+                margin-right: 5px;
+            }
+            #arrow-right {
+                transform: rotate(90deg);
+                margin-left: 5px;
+            }
+            #arrow-down {
+                transform: rotate(180deg);
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="columns is-justify-content-center">
+                <div class="column is-three-quarters">
+                    <div class="row box">
+                        <div class="is-2" id="arrows">
+                            <span><em>Hint: Use the arrow keys on your keyboard to control your bot. Press space to stop.</em></span>
+                            <div id="arrows-top">
+                                <div x-data class="button" @click="act('forward')" :class="$store.lastAction == 1 && 'is-primary'" id="arrow-up"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                            </div>
+                            <div id="arrows-bottom">
+                                <div x-data class="button" @click="act('left')" :class="$store.lastAction == 3 && 'is-primary'" id="arrow-left"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                                <div x-data class="button" @click="act('backward')" :class="$store.lastAction == 2 && 'is-primary'" id="arrow-down"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                                <div x-data class="button" @click="act('right')" :class="$store.lastAction == 4 && 'is-primary'" id="arrow-right"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                            </div>
+                            <div id="stop">
+                                <div x-data class="button" @click="act('stop')" :class="$store.lastAction == 0 && 'is-primary'" id="stop" x-text="$store.lastAction == 0 ? 'Stopped' : 'Stop'"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div x-data class="row box">
+                        <img :src="$store.img" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('lastAction', 'stop')
+                Alpine.store('stopAll', false)
+                Alpine.store('img', '')
+                pollImage()
+            })
+            
+            function act(action) {
+                fetch('/act', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: action
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then((res) => res.json()).then((json) => console.log(json))
+                Alpine.store('lastAction', action)
+            }
+            
+            const keyToAction = {
+                'ArrowUp': 'forward',
+                'ArrowDown': 'backward',
+                'ArrowLeft': 'left',
+                'ArrowRight': 'right',
+                ' ': 'stop'
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (['TEXTAREA', 'INPUT'].includes(e.target.tagName.toUpperCase())) {
+                    return
+                }
+                action = keyToAction[e.key]
+                if(action !== undefined) {
+                    act(action)
+                }
+            })
+
+            function pollImage() {
+                fetch(
+                    '/img',
+                    {
+                        method: 'GET'
+                    }
+                ).then(res => res.text()).then((img) => {
+                    Alpine.store('img', img)
+                    setTimeout(pollImage, 100)
+                })
+            }
+
+        </script>
+    </body>
+</html>
