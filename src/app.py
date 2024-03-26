@@ -40,7 +40,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def redirect():
     return RedirectResponse('/static/index.html')
 
-@app.get('/img')
+@app.get('/img', response_model=models.StatusResponse)
 def img():
     buffer = io.BytesIO()
     picam2.capture_file(buffer, format='jpeg')
@@ -54,7 +54,7 @@ def img():
     data = 'data:image/jpeg;base64,' + base64.b64encode(buffer_out.read()).decode('utf-8')
 
     print(distance.distance)
-    return fastapi.Response(data, media_type='text/plain;charset=UTF-8')
+    return models.StatusResponse(distance=distance.distance, image=data)
 
 @app.post('/act')
 def act(action: models.ActionRequest):

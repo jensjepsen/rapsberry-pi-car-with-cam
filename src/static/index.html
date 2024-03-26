@@ -59,6 +59,7 @@
                 Alpine.store('lastAction', 'stop')
                 Alpine.store('stopAll', false)
                 Alpine.store('img', '')
+                Alpine.store('dist', 1.0)
                 pollImage()
             })
             
@@ -99,8 +100,9 @@
                     {
                         method: 'GET'
                     }
-                ).then(res => res.text()).then((img) => {
-                    Alpine.store('img', img)
+                ).then(res => res.json()).then((data) => {
+                    Alpine.store('img', data['img'])
+                    Alpine.store('dist', data['dist'])
                     setTimeout(pollImage, 100)
                 })
             }
