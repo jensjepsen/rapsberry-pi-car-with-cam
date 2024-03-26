@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
+from PIL import Image
+
 import base64
 import io
 from picamera2 import Picamera2
@@ -42,7 +44,13 @@ def img():
     buffer = io.BytesIO()
     picam2.capture_file(buffer, format='jpeg')
     buffer.seek(0)
-    data = 'data:image/jpeg;base64,' + base64.b64encode(buffer.read()).decode('utf-8')
+
+    img = Image.open(buffer)
+    #img = img.resize(size=(400, 300))
+    buffer_out = io.BytesIO()
+    img.save(buffer_out, format='jpeg')
+    buffer_out.seek(0)
+    data = 'data:image/jpeg;base64,' + base64.b64encode(buffer_out.read()).decode('utf-8')
     return fastapi.Response(data, media_type='text/plain;charset=UTF-8')
 
 @app.post('/act')
