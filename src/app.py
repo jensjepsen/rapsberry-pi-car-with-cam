@@ -12,7 +12,7 @@ import libcamera
 
 import models
 
-from gpiozero import Robot
+from gpiozero import Robot, DistanceSensor
 
 picam2 = Picamera2()
 config = picam2.create_still_configuration(main={'size': (800, 600)})
@@ -22,6 +22,7 @@ picam2.configure(config)
 picam2.start()
 
 robot = Robot(left=(17, 27), right=(24, 23))
+distance = DistanceSensor(echo=5, trigger=6)
 
 app = fastapi.FastAPI()
 
@@ -51,6 +52,8 @@ def img():
     img.save(buffer_out, format='jpeg')
     buffer_out.seek(0)
     data = 'data:image/jpeg;base64,' + base64.b64encode(buffer_out.read()).decode('utf-8')
+
+    print(distance.distance)
     return fastapi.Response(data, media_type='text/plain;charset=UTF-8')
 
 @app.post('/act')
