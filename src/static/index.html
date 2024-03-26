@@ -104,8 +104,8 @@
                         method: 'GET'
                     }
                 ).then(res => res.json()).then((data) => {
-                    Alpine.store('img', data['img'])
-                    Alpine.store('dist', data['dist'])
+                    Alpine.store('img', data.image)
+                    Alpine.store('dist', data.distance)
                     setTimeout(pollImage, 100)
                 })
             }
